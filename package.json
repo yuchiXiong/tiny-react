@@ -2,13 +2,16 @@
   "name": "@yuchi/react",
   "version": "0.0.1",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build:source": "./node_modules/.bin/esbuild ./src/*.ts --bundle --minify --target=chrome58,firefox57,safari11,edge16 --format=esm --outdir=./dist",
+    "build:type": "tsc ./src/*.ts --emitDeclarationOnly --declaration --outDir ./dist",
+    "build": "yarn build:source && yarn build:type"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "esbuild": "^0.14.53",
     "typescript": "^4.7.4"
   }
 }

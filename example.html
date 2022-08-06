@@ -9,18 +9,20 @@
 </head>
 
 <body>
-  <div id="root">111</div>
+  <div id="root"></div>
+
   <script type="module">
-    import { React, ReactDOM } from './index';
+    import React from './dist/react.js';
+    import ReactDOM from './dist/react-dom.js';
 
-    const container = document.querySelector("#root");
+    const element = React.createElement(
+      'h1',
+      { name: 'TinyReact' },
+      'Hello',
+      'TinyReact!'
+    );
 
-    const App = React.createElement({
-      type: "h1",
-      props: { name: 'TinyReact' }
-    });
-    ReactDOM.render(App, container);
-
+    ReactDOM.render(element, document.getElementById('root'));
   </script>
 </body>
 
