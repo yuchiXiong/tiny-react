@@ -11,6 +11,7 @@ interface Fiber {
 }
 
 class ReactDOM {
+  private static oldFiber: Fiber | null = null;
   private static nextUnitOfWork: Fiber | null = null;
   static render(reactElement: ReactElement, container: HTMLElement): void {
     ReactDOM.nextUnitOfWork = {
@@ -23,7 +24,22 @@ class ReactDOM {
       child: null,
       sibling: null
     }
+
+    ReactDOM.oldFiber = ReactDOM.nextUnitOfWork;
+
     requestIdleCallback(ReactDOM.workLoop);
+  }
+
+  private static commitRoot() {
+    ReactDOM.commitWork(ReactDOM.oldFiber!.child);
+  }
+
+  private static commitWork(fiber: Fiber | null) {
+    if (!fiber) return;
+    fiber.parent?.DOM.appendChild(fiber.DOM);
+
+    fiber.child && ReactDOM.commitWork(fiber.child);
+    fiber.sibling && ReactDOM.commitWork(fiber.sibling);
   }
 
   private static workLoop(deadline: IdleDeadline) {
@@ -31,11 +47,16 @@ class ReactDOM {
 
     while (!shouldYield && ReactDOM.nextUnitOfWork) {
       ReactDOM.nextUnitOfWork = ReactDOM.performUnitOfWork(ReactDOM.nextUnitOfWork);
-      console.log(ReactDOM.nextUnitOfWork);
+
       shouldYield = deadline.timeRemaining() < 1;
     }
 
-    requestIdleCallback(ReactDOM.workLoop);
+    if (!ReactDOM.nextUnitOfWork) {
+      ReactDOM.commitRoot();
+    } else {
+      requestIdleCallback(ReactDOM.workLoop);
+    }
+
   }
 
   private static performUnitOfWork(fiber: Fiber): Fiber | null {
@@ -43,24 +64,15 @@ class ReactDOM {
       fiber.DOM = ReactDOM.createDOM(fiber);
     }
 
-    if (fiber.parent) {
-      fiber.parent.DOM.appendChild(fiber.DOM);
-    }
-
-    let siblingFiber = fiber.sibling;
-    fiber.props.children.map((childFiber, index) => {
+    let siblingFiber: Fiber | null = null;
+    fiber.props.children.map((childFiber: Fiber, index) => {
+      childFiber.parent = fiber;
       if (index === 0) {
         fiber.child = childFiber;
-        childFiber.parent = fiber;
+        siblingFiber = fiber.child;
       } else {
-        if (!siblingFiber) {
-          siblingFiber = childFiber;
-          fiber.sibling = siblingFiber;
-        } else {
-          siblingFiber.sibling = childFiber;
-          siblingFiber = childFiber;
-        }
-        (siblingFiber as Fiber).parent = fiber;
+        siblingFiber!.sibling = childFiber;
+        siblingFiber = siblingFiber!.sibling;
       }
     });
 
@@ -72,9 +84,9 @@ class ReactDOM {
         if (nextFiber.sibling) {
           return nextFiber.sibling;
         }
+
         nextFiber = nextFiber.parent as Fiber;
       }
-
       return nextFiber;
     }
   }
