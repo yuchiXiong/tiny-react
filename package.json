@@ -6,7 +6,9 @@
   "scripts": {
     "build:source": "./node_modules/.bin/esbuild ./src/*.ts --bundle --minify --target=chrome58,firefox57,safari11,edge16 --format=esm --outdir=./dist",
     "build:type": "tsc ./src/*.ts --emitDeclarationOnly --declaration --outDir ./dist",
-    "build": "yarn build:source && yarn build:type"
+    "build": "yarn build:source && yarn build:type",
+    "dev:source": "./node_modules/.bin/esbuild ./src/*.ts --bundle --watch --minify --sourcemap --target=chrome58,firefox57,safari11,edge16 --format=esm --outdir=./dist",
+    "dev": "yarn dev:source && yarn build:type"
   },
   "author": "",
   "license": "ISC",

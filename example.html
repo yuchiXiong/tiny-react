@@ -16,10 +16,27 @@
     import ReactDOM from './dist/react-dom.js';
 
     const element = React.createElement(
-      'h1',
-      { name: 'TinyReact' },
-      'Hello',
-      'TinyReact!'
+      'div',
+      null,
+      React.createElement(
+        'h1',
+        null,
+        'Hello World!'
+      ),
+      React.createElement(
+        'p',
+        null,
+        React.createElement(
+          'span',
+          null,
+          'Hello '
+        ),
+        React.createElement(
+          'span',
+          null,
+          'TinyReact!'
+        ),
+      )
     );
 
     ReactDOM.render(element, document.getElementById('root'));
