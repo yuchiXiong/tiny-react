@@ -15,13 +15,23 @@ export interface ReactTextElement extends ReactElement {
 }
 
 class React {
-  static createElement(type: string, props: object[], ...children: Array<ReactElement | string>): ReactElement {
-    return {
-      type,
-      props: {
-        ...props,
-        children: children.map(child => (typeof child === 'object' ? child : this.createTextElement(child)))
-      },
+  static Component;
+  static createElement(type: string | Function | typeof React.Component, props: object[], ...children: Array<ReactElement | string>): ReactElement {
+    if (typeof type === "string") {
+      return {
+        type: type,
+        props: {
+          ...props,
+          children: children.map(child => (typeof child === 'object' ? child : this.createTextElement(child)))
+        },
+      }
+    } else {
+      if (type.isReactComponent) {
+        const instance = new type();
+        return instance.render();
+      } else {
+        return type();
+      }
     }
   }
 
@@ -33,6 +43,12 @@ class React {
         children: [],
       }
     }
+  }
+}
+
+React.Component = class {
+  static isReactComponent: boolean = true;
+  constructor() {
   }
 }
 
