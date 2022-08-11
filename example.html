@@ -24,6 +24,42 @@
         'Hello World!'
       ),
       React.createElement(
+        'h1',
+        null,
+        'Hello World!'
+      ),
+      React.createElement(
+        'h1',
+        null,
+        'Hello World!'
+      ),
+      React.createElement(
+        'h1',
+        null,
+        'Hello World!'
+      ),
+      React.createElement(
+        'h1',
+        null,
+        'Hello World!'
+      ),
+      React.createElement(
+        'h1',
+        null,
+        'Hello World!'
+      ),
+      React.createElement(
+        'h1',
+        null,
+        'Hello World!'
+      ),
+      React.createElement(
+        'h1',
+        null,
+        'Hello World!'
+      ),
+
+      React.createElement(
         'p',
         null,
         React.createElement(
@@ -40,6 +76,46 @@
     );
 
     ReactDOM.render(element, document.getElementById('root'));
+
+    setTimeout(() => {
+      const newElement = React.createElement(
+        'div',
+        null,
+        React.createElement(
+          'h2',
+          null,
+          'Hello!'
+        ),
+        React.createElement('hr'),
+        React.createElement(
+          'span',
+          null,
+          'TinyReact is Cool'
+        ),
+        React.createElement(
+          'ul',
+          null,
+          React.createElement(
+            'li',
+            null,
+            'React.createElement'
+          ),
+          React.createElement(
+            'li',
+            null,
+            'ReactDOM.render'
+          ),
+          React.createElement(
+            'li',
+            null,
+            'dobule buffering'
+          ),
+        ),
+      );
+
+      ReactDOM.render(newElement, document.getElementById('root'));
+    }, 2000);
+
   </script>
 </body>
 

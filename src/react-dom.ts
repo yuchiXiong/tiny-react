@@ -8,12 +8,17 @@ interface Fiber {
   parent: Fiber | null;
   child: Fiber | null;
   sibling: Fiber | null;
+  alternate: Fiber | null;
 }
 
 class ReactDOM {
+
+  private static currentFiber: Fiber | null = null;
   private static oldFiber: Fiber | null = null;
   private static nextUnitOfWork: Fiber | null = null;
+
   static render(reactElement: ReactElement, container: HTMLElement): void {
+    ReactDOM.oldFiber = ReactDOM.currentFiber;
     ReactDOM.nextUnitOfWork = {
       DOM: container,
       type: reactElement.type,
@@ -22,16 +27,16 @@ class ReactDOM {
       },
       parent: null,
       child: null,
-      sibling: null
-    }
-
-    ReactDOM.oldFiber = ReactDOM.nextUnitOfWork;
+      sibling: null,
+      alternate: ReactDOM.oldFiber,
+    };
+    ReactDOM.currentFiber = ReactDOM.nextUnitOfWork;
 
     requestIdleCallback(ReactDOM.workLoop);
   }
 
   private static commitRoot() {
-    ReactDOM.commitWork(ReactDOM.oldFiber!.child);
+    ReactDOM.commitWork(ReactDOM.currentFiber!.child);
   }
 
   private static commitWork(fiber: Fiber | null) {
@@ -60,19 +65,48 @@ class ReactDOM {
   }
 
   private static performUnitOfWork(fiber: Fiber): Fiber | null {
-    if (!fiber.DOM) {
-      fiber.DOM = ReactDOM.createDOM(fiber);
+    const isSameType = fiber.type === fiber.alternate?.type;
+    const isProperty = i => i !== 'children';
+    const props = Object.keys(fiber.props).filter(isProperty);
+    const newProps = props.filter(p => fiber.props[p] !== fiber.alternate?.props[p]);
+    const isSameProp = newProps.length === 0;
+
+    if (!isSameType) {
+
+      fiber.DOM ||= ReactDOM.createDOM(fiber);
+
+      fiber.alternate && ReactDOM.deleteDOM(fiber.alternate);
+    } else if (isSameType && !isSameProp) {
+      fiber.DOM = fiber.alternate!.DOM;
+      Object.keys(fiber.alternate?.props).filter(isProperty).map(p => fiber.DOM[p] = '');
+      Object.keys(fiber.props).filter(isProperty).map(p => fiber.DOM[p] = fiber.props[p]);
+    } else {
+      fiber.DOM = fiber.alternate!.DOM;
     }
 
+    let oldFiber = fiber.alternate;
+
     let siblingFiber: Fiber | null = null;
+    let nextOldFiber: Fiber | null = null;
     fiber.props.children.map((childFiber: Fiber, index) => {
       childFiber.parent = fiber;
       if (index === 0) {
         fiber.child = childFiber;
         siblingFiber = fiber.child;
+        childFiber.alternate = oldFiber?.child || null;
+        nextOldFiber = childFiber.alternate;
       } else {
         siblingFiber!.sibling = childFiber;
+        siblingFiber!.alternate = nextOldFiber || null;
         siblingFiber = siblingFiber!.sibling;
+        nextOldFiber = nextOldFiber?.sibling || null;
+      }
+
+      if (index === fiber.props.children.length - 1 && nextOldFiber) {
+        while (nextOldFiber) {
+          ReactDOM.deleteDOM(nextOldFiber);
+          nextOldFiber = nextOldFiber.sibling;
+        }
       }
     });
 
@@ -103,6 +137,12 @@ class ReactDOM {
       .map(p => dom[p] = reactElement.props[p]);
 
     return dom;
+  }
+
+  private static deleteDOM(fiber: Fiber): void {
+    if (fiber.DOM) {
+      fiber.DOM.remove();
+    }
   }
 }
 
