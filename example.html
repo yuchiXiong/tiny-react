@@ -15,7 +15,12 @@
     import React from './dist/react.js';
     import ReactDOM from './dist/react-dom.js';
 
-    const App = () => React.createElement('h1', null, 'Hello React!');
+    const App = (props) => {
+
+      console.log(props);
+
+      return React.createElement('h1', null, 'Hello React!');
+    };
 
     class Hello extends React.Component {
       render() {
@@ -24,7 +29,7 @@
           null,
           React.createElement('h1', null, 'Hello React Class Component!'),
           React.createElement('hr'),
-          React.createElement(App)
+          React.createElement(App, { name: 'yuchi' })
         );
       }
     }

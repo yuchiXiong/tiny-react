@@ -28,9 +28,9 @@ class React {
     } else {
       if (type.isReactComponent) {
         const instance = new type();
-        return instance.render();
+        return instance.render(props);
       } else {
-        return type();
+        return type(props);
       }
     }
   }
